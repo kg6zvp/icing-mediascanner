@@ -6,5 +6,5 @@ public interface GenericRestClient {
 	 * @param url the url to perform the GET request on
 	 * @return the deserialized result
 	 */
-	<T> T getRequest(String url);
+	<T> T getRequest(Class<T> klasse, String url);
 }

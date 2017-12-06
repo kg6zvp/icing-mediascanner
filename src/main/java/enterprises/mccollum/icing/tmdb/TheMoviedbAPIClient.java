@@ -1,17 +1,17 @@
 package enterprises.mccollum.icing.tmdb;
 
-
-import java.io.StringReader;
 import java.util.List;
-import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.inject.Inject;
 
 public class TheMoviedbAPIClient {
 	public static final String API_KEY = "c8b6dbadc2817d249f4c587da01533b7"; //kodi: "6889f6089877fd092454d00edb44a84d"
 	public static final String MOVIE_GENRE_URL = "https://api.themoviedb.org/3/genre/movie/list?api_key="+API_KEY+"&language=en-US";
 	public static final String TV_GENRE_URL = "https://api.themoviedb.org/3/genre/tv/list?api_key="+API_KEY+"&language=en-US";
-	
+
+	@Inject
 	GenericRestClient restClient;
 	
 	ProgressReceiver progressReceiver;
@@ -20,9 +20,10 @@ public class TheMoviedbAPIClient {
 		MediaSearchResultContainer result = null;
 		Logger.getLogger("TmDbClient").log(Level.INFO,
 				String.format("Search Url: %s", buildSearchUrl(query, year)));
-		result = makeMovieDbRequest(() -> {
+		result = restClient.<MediaSearchResultContainer>getRequest(MediaSearchResultContainer.class, buildSearchUrl(query, year));
+		/*result = makeMovieDbRequest(() -> {
 			return ClientBuilder.newClient().target(buildSearchUrl(query, year)).request().get(MediaSearchResultContainer.class);
-		});
+		});//*/
 		return result.getResults();
 	}
 
@@ -33,16 +34,8 @@ public class TheMoviedbAPIClient {
 		return sb.toString();
 	}
 	
-	private void wait(int waitTime) {
-		try {
-			Thread.sleep(waitTime);
-		} catch (InterruptedException e1) {
-			e1.printStackTrace();
-		}
-	}
-	
-	Genre getGenreById(Long id) {
-		JsonObject movieGenres = makeMovieDbRequest(() -> {
+	SerializableGenre getGenreById(Long id) {
+		/*JsonObject movieGenres = makeMovieDbRequest(() -> {
 			String json = ClientBuilder.newClient().target(MOVIE_GENRE_URL).request().get(String.class);
 			try(JsonReader reader = Json.createReader(new StringReader(json))) {
 				return reader.readObject();
@@ -54,37 +47,7 @@ public class TheMoviedbAPIClient {
 			Genre genre = new Genre(genreJson);
 			if(genre.id == id)
 				return genre;
-		}
+		} //*/
 		return null;
-	}
-	
-	/**
-	 * Handles requests to TheMovieDb in a way that allows the consumer of this function not to worry about rate limits
-	 * @param requestLambda The lambda that actually performs the request
-	 * @return
-	 */
-	private <T> T makeMovieDbRequest(Supplier<T> requestLambda) {
-		T result = null;
-		while(result == null) {
-			try {
-				result = requestLambda.get();
-			} catch(ClientErrorException e) {
-				Response r = e.getResponse();
-				if(r.getStatus() != 429) //we don't know what to do with it
-					throw new RuntimeException(e.getCause());
-				
-				int waitTime = 250; //wait at least 250 milliseconds
-				
-				/**
-				 * Deal with the Retry-After header if it exists
-				 */
-				String value = r.getHeaderString("Retry-After");
-				if(value != null && value.matches("[0-9]*")) {
-					waitTime += (1000*Integer.parseInt(value));
-				}
-				wait(waitTime);
-			}
-		}
-		return result;
 	}
 }
