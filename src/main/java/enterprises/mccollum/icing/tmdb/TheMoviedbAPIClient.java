@@ -1,53 +1,71 @@
 package enterprises.mccollum.icing.tmdb;
 
+import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Map;
 
 import javax.inject.Inject;
 
+import enterprises.mccollum.icing.tmdb.film.MovieSearchResultContainer;
+import enterprises.mccollum.icing.tmdb.film.SerializableMovieMetadata;
+import enterprises.mccollum.icing.tmdb.genre.GenreContainer;
+import enterprises.mccollum.icing.tmdb.genre.SerializableGenre;
+import enterprises.mccollum.icing.tmdb.required.GenericRestClient;
+import enterprises.mccollum.icing.tmdb.tv.SerializableShowMetadata;
+import enterprises.mccollum.icing.tmdb.tv.ShowSearchResultContainer;
+
 public class TheMoviedbAPIClient {
 	public static final String API_KEY = "c8b6dbadc2817d249f4c587da01533b7"; //kodi: "6889f6089877fd092454d00edb44a84d"
-	public static final String MOVIE_GENRE_URL = "https://api.themoviedb.org/3/genre/movie/list?api_key="+API_KEY+"&language=en-US";
-	public static final String TV_GENRE_URL = "https://api.themoviedb.org/3/genre/tv/list?api_key="+API_KEY+"&language=en-US";
-
+	public static final String MOVIE_GENRE_URL = "https://api.themoviedb.org/3/genre/movie/list?api_key="+API_KEY; //+"&language=en-US";
+	public static final String TV_GENRE_URL = "https://api.themoviedb.org/3/genre/tv/list?api_key="+API_KEY; //+"&language=en-US";
+	
 	@Inject
 	GenericRestClient restClient;
+
+	transient Map<Long, SerializableGenre> genresCache = null;
 	
-	ProgressReceiver progressReceiver;
-	
-	public List<MovieMetadata> searchMovies(String query, Integer year){
-		MediaSearchResultContainer result = null;
-		Logger.getLogger("TmDbClient").log(Level.INFO,
-				String.format("Search Url: %s", buildSearchUrl(query, year)));
-		result = restClient.<MediaSearchResultContainer>getRequest(MediaSearchResultContainer.class, buildSearchUrl(query, year));
-		/*result = makeMovieDbRequest(() -> {
-			return ClientBuilder.newClient().target(buildSearchUrl(query, year)).request().get(MediaSearchResultContainer.class);
-		});//*/
+	public List<SerializableMovieMetadata> searchMovies(String query, Integer year){
+		MovieSearchResultContainer result = null;
+		result = restClient.<MovieSearchResultContainer>getRequest(MovieSearchResultContainer.class, buildMovieSearchUrl(query, year));
+		if(result == null) return null;
 		return result.getResults();
 	}
 
-	private String buildSearchUrl(String query, Integer year) {
+	private String buildMovieSearchUrl(String query, Integer year) {
 		StringBuilder sb = new StringBuilder(String.format("http://api.themoviedb.org/3/search/movie?api_key=%s&query=%s", API_KEY, query));
 		if(year != null)
 			sb.append("&year="+year);
 		return sb.toString();
 	}
 	
-	SerializableGenre getGenreById(Long id) {
-		/*JsonObject movieGenres = makeMovieDbRequest(() -> {
-			String json = ClientBuilder.newClient().target(MOVIE_GENRE_URL).request().get(String.class);
-			try(JsonReader reader = Json.createReader(new StringReader(json))) {
-				return reader.readObject();
+	public List<SerializableShowMetadata> searchShows(String query, Integer year){
+		ShowSearchResultContainer result = null;
+		result = restClient.<ShowSearchResultContainer>getRequest(ShowSearchResultContainer.class, buildTVSearchUrl(query, year));
+		if(result == null) return null;
+		return result.getResults();
+	}
+	
+	private String buildTVSearchUrl(String query, Integer year) {
+		StringBuilder sb = new StringBuilder(String.format("http://api.themoviedb.org/3/search/tv?api_key=%s&query=%s", API_KEY, query));
+		if(year != null)
+			sb.append("&first_air_date_year="+year);
+		return sb.toString();
+	}
+	
+	public SerializableGenre getGenreById(Long id) {
+		if(genresCache == null) {
+			genresCache = new HashMap<Long, SerializableGenre>(32);
+			List<SerializableGenre> movieGenresList = restClient.getRequest(GenreContainer.class, MOVIE_GENRE_URL).getGenres();
+			List<SerializableGenre> tvGenresList = restClient.getRequest(GenreContainer.class, TV_GENRE_URL).getGenres();
+			for(SerializableGenre genre : movieGenresList) {
+				genresCache.put(genre.getId(), genre);
 			}
-		});
-		JsonArray genres = movieGenres.getJsonArray("genres");
-		for(int i = 0; i < genres.size(); ++i) {
-			JsonObject genreJson = genres.getJsonObject(i);
-			Genre genre = new Genre(genreJson);
-			if(genre.id == id)
-				return genre;
-		} //*/
-		return null;
+			if(genresCache.get(id) != null)
+				return genresCache.get(id);
+			for(SerializableGenre genre : tvGenresList) {
+				genresCache.put(genre.getId(), genre);
+			}
+		}
+		return genresCache.get(id);
 	}
 }

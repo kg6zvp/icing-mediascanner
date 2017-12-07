@@ -1,4 +1,4 @@
-package enterprises.mccollum.icing.tmdb;
+package enterprises.mccollum.icing.tmdb.required;
 
 public interface ProgressReceiver {
 	/**
@@ -8,4 +8,6 @@ public interface ProgressReceiver {
 	 * @param total the number of total files to be scanned
 	 */
 	void updateProgress(int completed, Integer total);
+	
+	void noResultsFor(String query, Integer year);
 }

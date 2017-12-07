@@ -1,20 +1,13 @@
-package enterprises.mccollum.icing.tmdb;
+package enterprises.mccollum.icing.tmdb.film;
 
-import java.util.HashMap;
+//import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+//import java.util.Map;
 
-//import javax.persistence.Embeddable;
-//import javax.persistence.Lob;
-
-//import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-//@Embeddable
-//@JsonIgnoreProperties(ignoreUnknown = true)
-public class MovieMetadata {
+public class SerializableMovieMetadata {
+	Long id;
 
 	Integer vote_count;
-	Long id;
 	Boolean video;
 	Double vote_average;
 	String title;
@@ -22,11 +15,10 @@ public class MovieMetadata {
 	String poster_path;
 	String original_language;
 	String original_title;
-	//List<Integer> genre_ids = null;
+	List<Integer> genre_ids;
 	String backdrop_path;
 	Boolean adult;
 	
-	//@Lob
 	String overview;
 	String release_date;
 	//Map<String, Object> additionalProperties = new HashMap<String, Object>();
@@ -85,12 +77,12 @@ public class MovieMetadata {
 	public void setOriginal_title(String original_title) {
 		this.original_title = original_title;
 	}
-//	public List<Integer> getGenre_ids() {
-//		return genre_ids;
-//	}
-//	public void setGenre_ids(List<Integer> genre_ids) {
-//		this.genre_ids = genre_ids;
-//	}
+	public List<Integer> getGenre_ids() {
+		return genre_ids;
+	}
+	public void setGenre_ids(List<Integer> genre_ids) {
+		this.genre_ids = genre_ids;
+	}
 	public String getBackdrop_path() {
 		return backdrop_path;
 	}

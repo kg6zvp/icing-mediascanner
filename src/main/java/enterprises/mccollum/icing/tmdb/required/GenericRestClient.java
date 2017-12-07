@@ -1,4 +1,4 @@
-package enterprises.mccollum.icing.tmdb;
+package enterprises.mccollum.icing.tmdb.required;
 
 public interface GenericRestClient {
 	/**
