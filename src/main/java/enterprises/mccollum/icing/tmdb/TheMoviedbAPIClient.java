@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 import enterprises.mccollum.icing.tmdb.film.MovieSearchResultContainer;
 import enterprises.mccollum.icing.tmdb.film.SerializableMovieMetadata;
 import enterprises.mccollum.icing.tmdb.genre.GenreContainer;
@@ -19,9 +17,13 @@ public class TheMoviedbAPIClient {
 	public static final String MOVIE_GENRE_URL = "https://api.themoviedb.org/3/genre/movie/list?api_key="+API_KEY; //+"&language=en-US";
 	public static final String TV_GENRE_URL = "https://api.themoviedb.org/3/genre/tv/list?api_key="+API_KEY; //+"&language=en-US";
 	
-	@Inject
 	GenericRestClient restClient;
 
+	public TheMoviedbAPIClient() {}
+	public TheMoviedbAPIClient(GenericRestClient restClient) {
+		this.restClient = restClient;
+	}
+	
 	transient Map<Long, SerializableGenre> genresCache = null;
 	
 	public List<SerializableMovieMetadata> searchMovies(String query, Integer year){
