@@ -36,6 +36,21 @@
 		</dependency> -->
 		
 		<dependency>
+			<!-- Provides Mimetype discovery - necessary for all? -->
+			<groupId>com.github.amr</groupId>
+			<artifactId>mimetypes</artifactId>
+			<version>0.0.3</version>
+		</dependency>
+		<dependency>
+			<!-- Provides Levenshtein distance - https://mvnrepository.com/artifact/org.apache.commons/commons-text -->
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-text</artifactId>
+			<version>1.1</version>
+		</dependency>
+		
+		
+		<!-- TEST DEPENDENCIES - Below this line all dependencies are only used in testing -->
+		<dependency>
 			<!-- JUnit Testing -->
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>

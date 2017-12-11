@@ -19,7 +19,6 @@ public class TheMoviedbAPIClient {
 	
 	GenericRestClient restClient;
 
-	public TheMoviedbAPIClient() {}
 	public TheMoviedbAPIClient(GenericRestClient restClient) {
 		this.restClient = restClient;
 	}
@@ -57,11 +56,15 @@ public class TheMoviedbAPIClient {
 	public SerializableGenre getGenreById(Long id) {
 		if(genresCache == null) {
 			genresCache = new HashMap<Long, SerializableGenre>(32);
+			
 			List<SerializableGenre> movieGenresList = restClient.getRequest(GenreContainer.class, MOVIE_GENRE_URL).getGenres();
-			List<SerializableGenre> tvGenresList = restClient.getRequest(GenreContainer.class, TV_GENRE_URL).getGenres();
 			for(SerializableGenre genre : movieGenresList) {
 				genresCache.put(genre.getId(), genre);
 			}
+		}
+		
+		if(genresCache.get(id) == null) {
+			List<SerializableGenre> tvGenresList = restClient.getRequest(GenreContainer.class, TV_GENRE_URL).getGenres();
 			if(genresCache.get(id) != null)
 				return genresCache.get(id);
 			for(SerializableGenre genre : tvGenresList) {
